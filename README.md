@@ -26,7 +26,11 @@
 
 ## 📸 截图
 
-> _TODO: 启动后补充主窗口、菜单栏、聊天室截图_
+浅色模式<img width="878" height="593" alt="截屏2026-08-08 14 01 59" src="https://github.com/user-attachments/assets/98dd2800-4dc9-4edf-b23d-7b1269733122" />
+
+深色模式<img width="912" height="626" alt="截屏2026-08-08 14 02 06" src="https://github.com/user-attachments/assets/9bc86ec0-724c-4893-9fb8-3065550f8c8d" />
+
+菜单栏窗口<img width="366" height="490" alt="截屏2026-08-08 14 02 12" src="https://github.com/user-attachments/assets/9788586f-d377-4cf8-8eb6-1b3ca558eddf" />
 
 ## 🚀 构建
 
