@@ -1,0 +1,33 @@
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+*.xcodeproj
+*.xcworkspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Xcode
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Build artifacts
+build/
+DerivedData/
+*.app
+*.dmg
+*.ipa
+*.xcuserstate
+
+# Backups (本项目的本地备份目录)
+.backup_*/
+
+# Editor
+.vscode/
+.idea/
