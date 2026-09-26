@@ -2,9 +2,10 @@ import SwiftUI
 import AppKit
 
 /// 应用元信息 — 集中管理版本号与版权，便于全局维护与防篡改
+/// 版本编号规则：第1位=界面大更新，第2位=功能更新，第3位=修复问题
 /// ©️Trigin
 enum AppInfo {
-    static let version = "1.0.1"
+    static let version = "1.2.3"
     static let copyright = "©️Trigin 2026"
     static let appName = "Trigin6Quote"
 
@@ -31,6 +32,9 @@ struct Trigin6QuoteApp: App {
     @StateObject private var windowOpener = WindowOpener()
     // 外观模式：0=跟随系统 1=浅色 2=深色
     @AppStorage("appearanceMode") private var appearanceMode: Int = 0
+    // 首次启动欢迎页 — v1.2.3 新增 ©️Trigin
+    @AppStorage("hasLaunchedBefore") private var hasLaunchedBefore: Bool = false
+    @State private var showWelcome = false
 
     // 根据设置计算实际配色方案
     private var preferredScheme: ColorScheme? {
@@ -48,6 +52,18 @@ struct Trigin6QuoteApp: App {
                 .environmentObject(windowOpener)
                 .frame(minWidth: 900, minHeight: 640)
                 .preferredColorScheme(preferredScheme)
+                // v1.2.3 首次启动欢迎页 ©️Trigin
+                .sheet(isPresented: $showWelcome) {
+                    WelcomeView()
+                        .environmentObject(store)
+                        .frame(minWidth: 900, minHeight: 600)
+                }
+                .onAppear {
+                    if !hasLaunchedBefore {
+                        showWelcome = true
+                        hasLaunchedBefore = true
+                    }
+                }
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)

@@ -119,7 +119,10 @@ final class ChatWebViewModel: NSObject, ObservableObject, WKNavigationDelegate {
     func loadHTML(in webView: WKWebView, isDark: Bool) {
         self.webView = webView
         webView.navigationDelegate = self
+        // 仅在 Debug 构建开启 Web 检查器，正式包不暴露调试入口
+        #if DEBUG
         webView.isInspectable = true
+        #endif
 
         let html = buildHTML(isDark: isDark)
         webView.loadHTMLString(html, baseURL: URL(string: "about:blank")!)
@@ -160,29 +163,30 @@ final class ChatWebViewModel: NSObject, ObservableObject, WKNavigationDelegate {
     }
 
     // MARK: - WKNavigationDelegate
+    // 代理方法由 WebKit 在非主 actor 上下文调用，需标记 nonisolated；内部 UI 更新再切主队列
 
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        DispatchQueue.main.async {
-            self.isLoading = false
-            self.loadError = nil
-            self.loadingTimer?.cancel()
-            self.loadingTimer = nil
+    nonisolated func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        DispatchQueue.main.async { [weak self] in
+            self?.isLoading = false
+            self?.loadError = nil
+            self?.loadingTimer?.cancel()
+            self?.loadingTimer = nil
         }
     }
 
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        DispatchQueue.main.async {
-            self.isLoading = false
-            self.loadError = error.localizedDescription
-            self.loadingTimer?.cancel()
+    nonisolated func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        DispatchQueue.main.async { [weak self] in
+            self?.isLoading = false
+            self?.loadError = error.localizedDescription
+            self?.loadingTimer?.cancel()
         }
     }
 
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        DispatchQueue.main.async {
-            self.isLoading = false
-            self.loadError = error.localizedDescription
-            self.loadingTimer?.cancel()
+    nonisolated func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        DispatchQueue.main.async { [weak self] in
+            self?.isLoading = false
+            self?.loadError = error.localizedDescription
+            self?.loadingTimer?.cancel()
         }
     }
 }
@@ -193,7 +197,10 @@ private final class ChatMessageHandler: NSObject, WKScriptMessageHandler {
     weak var viewModel: ChatWebViewModel?
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        viewModel?.handleScriptMessage(message)
+        // JS 回调运行在非主 actor 上下文，切到主队列后再调用 @MainActor 的处理器
+        DispatchQueue.main.async { [weak self] in
+            self?.viewModel?.handleScriptMessage(message)
+        }
     }
 }
 
@@ -210,13 +217,16 @@ struct ChatWebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let config = viewModel.makeWebViewConfiguration()
         let webView = WKWebView(frame: .zero, configuration: config)
-        webView.setValue(false, forKey: "drawsBackground")
+        // drawsBackground 无公开等价 API，这里通过官方 underPageBackgroundColor 设为透明来等效实现
+        webView.underPageBackgroundColor = .clear
         return webView
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
-        // 根据主题更新 WebView 背景色
-        webView.setValue(isDark ? NSColor(red: 0.10, green: 0.10, blue: 0.11, alpha: 1.0) : NSColor(red: 0.96, green: 0.95, blue: 0.92, alpha: 1.0), forKey: "underPageBackgroundColor")
+        // 根据主题更新 WebView 背景色（公开属性，替代私有 KVC）
+        webView.underPageBackgroundColor = isDark
+            ? NSColor(red: 0.10, green: 0.10, blue: 0.11, alpha: 1.0)
+            : NSColor(red: 0.96, green: 0.95, blue: 0.92, alpha: 1.0)
 
         // 使用 coordinator 标记追踪是否已加载，避免重复加载
         if !context.coordinator.hasLoaded {

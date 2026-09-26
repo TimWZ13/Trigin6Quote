@@ -49,6 +49,7 @@ struct QuoteView: View {
     @State private var cardHover = false
 
     private var scheme: ColorScheme { colorScheme }
+    private var categories: [String] { QuoteData.allCategories }
 
     var body: some View {
         ZStack {
@@ -58,7 +59,13 @@ struct QuoteView: View {
             VStack(spacing: 0) {
                 headerView
                     .padding(.horizontal, 44)
-                    .padding(.top, 36)
+                    .padding(.top, 28)
+
+                // 语录分类筛选 chip 栏
+                // ©️Trigin — v1.1.0 新增
+                categoryChipBar
+                    .padding(.top, 14)
+                    .padding(.bottom, 8)
 
                 Spacer()
 
@@ -74,12 +81,39 @@ struct QuoteView: View {
                 Spacer()
 
                 actionButtonsView
-                    .padding(.bottom, 44)
+                    .padding(.bottom, 36)
             }
         }
         .sheet(isPresented: $showFavorites) { FavoritesView(store: store) }
         .overlay(alignment: .center) {
             if copiedAnimation { CopyToastView(scheme: scheme).transition(.opacity.combined(with: .scale)) }
+        }
+    }
+
+    // MARK: - 分类 Chip 栏（主界面用）
+
+    private var categoryChipBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                CategoryChip(
+                    label: "全部",
+                    isSelected: store.selectedDailyCategory == nil,
+                    scheme: scheme
+                ) {
+                    store.selectedDailyCategory = nil
+                }
+
+                ForEach(categories, id: \.self) { cat in
+                    CategoryChip(
+                        label: cat,
+                        isSelected: store.selectedDailyCategory == cat,
+                        scheme: scheme
+                    ) {
+                        store.selectedDailyCategory = cat
+                    }
+                }
+            }
+            .padding(.horizontal, 44)
         }
     }
 
