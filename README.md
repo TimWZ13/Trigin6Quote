@@ -29,11 +29,6 @@
 - **分类分布统计** — 设置页可折叠查看各分类语录数量
 - **CHANGELOG 入口** — 设置页内置版本更新日志，随时查看历史变更
 
-## 📸 截图
-
-| 菜单栏 | 深色模式 | 浅色模式 |
-|:---:|:---:|:---:|
-| ![菜单栏](https://raw.githubusercontent.com/TimWZ13/Trigin6Quote/main/screenshots/menu_bar.png) | ![深色模式](https://raw.githubusercontent.com/TimWZ13/Trigin6Quote/main/screenshots/dark_mode.png) | ![浅色模式](https://raw.githubusercontent.com/TimWZ13/Trigin6Quote/main/screenshots/light_mode.png) |
 
 ## 🚀 构建
 
